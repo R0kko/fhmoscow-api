@@ -1,9 +1,13 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, _Sequelize) => {
-    await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+    await queryInterface.sequelize.query(
+      'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+    );
   },
   down: async (queryInterface, _Sequelize) => {
-    await queryInterface.sequelize.query('DROP EXTENSION IF EXISTS "uuid-ossp";');
+    await queryInterface.sequelize.query(
+      'DROP EXTENSION IF EXISTS "uuid-ossp";'
+    );
   },
 };

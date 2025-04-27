@@ -2,7 +2,9 @@
 
 module.exports = {
   up: async (queryInterface, _Sequelize) => {
-    const [results] = await queryInterface.sequelize.query('SELECT COUNT(*) as count FROM roles');
+    const [results] = await queryInterface.sequelize.query(
+      'SELECT COUNT(*) as count FROM roles'
+    );
     const count = parseInt(results[0].count, 10);
     if (count === 0) {
       await queryInterface.bulkInsert('roles', [

@@ -57,7 +57,7 @@ module.exports = {
       name: 'unique_user_role',
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('user_roles');
   },
 };
