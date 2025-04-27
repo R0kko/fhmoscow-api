@@ -35,12 +35,29 @@ export default {
                   items: {
                     type: 'object',
                     properties: {
-                      msg: { type: 'string' },
-                      param: { type: 'string' },
-                      location: { type: 'string' },
+                      type: { type: 'string', example: 'field' },
+                      value: { type: 'string', example: '' },
+                      msg: {
+                        type: 'string',
+                        example: 'Номер телефона обязателен',
+                      },
+                      path: { type: 'string', example: 'phone' },
+                      location: { type: 'string', example: 'body' },
                     },
                   },
                 },
+              },
+              example: {
+                message: 'Некорректные входные данные',
+                errors: [
+                  {
+                    type: 'field',
+                    value: '',
+                    msg: 'Номер телефона обязателен',
+                    path: 'phone',
+                    location: 'body',
+                  },
+                ],
               },
             },
           },
@@ -87,6 +104,16 @@ export default {
             type: 'string',
             format: 'date',
             example: '1998-05-12',
+          },
+          roles: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string', example: 'Администратор' },
+                alias: { type: 'string', example: 'ADMIN' },
+              },
+            },
           },
         },
       },

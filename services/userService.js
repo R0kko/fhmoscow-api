@@ -1,26 +1,9 @@
 const bcrypt = require('bcryptjs');
 
-const { User } = require('../models');
+const { User, Role } = require('../models');
 
 class UserService {
   static async getById(id) {
-    return User.findByPk(id, {
-      attributes: {
-        exclude: [
-          'password',
-          'createdAt',
-          'updatedAt',
-          'deletedAt',
-          'created_by',
-          'updated_by',
-        ],
-      },
-    });
-  }
-
-  static async updateProfile(id, payload) {
-    const allowed = ['first_name', 'last_name', 'middle_name', 'date_of_birth'];
-
     const user = await User.findByPk(id, {
       attributes: {
         exclude: [
@@ -32,6 +15,46 @@ class UserService {
           'updated_by',
         ],
       },
+      include: [
+        {
+          model: Role,
+          attributes: ['name', 'alias'],
+          through: { attributes: [] },
+        },
+      ],
+    });
+    if (!user) {
+      return null;
+    }
+    const plain = user.get();
+    plain.roles =
+      plain.Roles?.map((r) => ({ name: r.name, alias: r.alias })) || [];
+    delete plain.Roles;
+    return plain;
+  }
+
+  static async updateProfile(id, payload) {
+    const allowed = ['first_name', 'last_name', 'middle_name', 'date_of_birth'];
+
+    const user = await User.findByPk(id, {
+      attributes: {
+        exclude: [
+          'id',
+          'password',
+          'createdAt',
+          'updatedAt',
+          'deletedAt',
+          'created_by',
+          'updated_by',
+        ],
+      },
+      include: [
+        {
+          model: Role,
+          attributes: ['name', 'alias'],
+          through: { attributes: [] },
+        },
+      ],
     });
     if (!user) {
       return null;
@@ -46,20 +69,15 @@ class UserService {
     await user.save();
     const plain = user.get();
     delete plain.password;
+    plain.roles =
+      plain.Roles?.map((r) => ({ name: r.name, alias: r.alias })) || [];
+    delete plain.Roles;
     return plain;
   }
 
   static async updatePassword(id, oldPassword, newPassword) {
-    const user = await User.findByPk(id, {
-      attributes: {
-        exclude: [
-          'createdAt',
-          'updatedAt',
-          'deletedAt',
-          'created_by',
-          'updated_by',
-        ],
-      },
+    const user = await User.unscoped().findByPk(id, {
+      attributes: ['id', 'password'],
     });
     if (!user) {
       return { ok: false, reason: 'not_found' };

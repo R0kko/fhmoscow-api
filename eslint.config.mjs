@@ -41,7 +41,6 @@ export default defineConfig([
       'prefer-const': 'error',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 
-      // Прочее
       'no-console': 'warn',
 
       // Правила для работы с импортами

@@ -59,7 +59,6 @@ export const changePassword = async (req, res) => {
     res.json({ message: 'Пароль обновлён' });
   } catch (err) {
     req.logger?.error(err);
-    console.log(err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 };
