@@ -34,12 +34,11 @@ class UserService {
   }
 
   static async updateProfile(id, payload) {
-    const allowed = ['first_name', 'last_name', 'middle_name', 'date_of_birth'];
+    const allowed = ['email'];
 
     const user = await User.findByPk(id, {
       attributes: {
         exclude: [
-          'id',
           'password',
           'createdAt',
           'updatedAt',

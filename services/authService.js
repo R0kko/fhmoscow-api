@@ -33,6 +33,7 @@ async function authenticateUser(phone, password) {
     user.Roles?.map((r) => ({ name: r.name, alias: r.alias })) || [];
 
   const userData = {
+    id: user.id,
     phone: user.phone,
     email: user.email,
     last_name: user.last_name,

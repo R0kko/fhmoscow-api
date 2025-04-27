@@ -46,6 +46,8 @@ const { login } = require('../controllers/authController');
  *                 user:
  *                   type: object
  *                   properties:
+ *                     id:
+ *                       type: string
  *                     phone:
  *                       type: string
  *                     email:
