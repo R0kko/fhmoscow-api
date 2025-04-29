@@ -10,8 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
 import swaggerDefinition from './docs/swaggerDef.js';
-import authRouter from './routes/auth.js';
-import usersRouter from './routes/users.js';
+import indexRouter from './routes/index.js';
 import db from './models/main/index.js';
 import maria from './models/stat/index.js';
 
@@ -63,8 +62,7 @@ async function initializeDatabase() {
   // Swagger UI available at /api/docs
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  app.use('/auth', authRouter);
-  app.use('/users', usersRouter);
+  app.use('/', indexRouter);
 })();
 
 export default app;
