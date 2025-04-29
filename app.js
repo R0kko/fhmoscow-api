@@ -12,7 +12,8 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerDefinition from './docs/swaggerDef.js';
 import authRouter from './routes/auth.js';
 import usersRouter from './routes/users.js';
-import db from './models/index.js';
+import db from './models/main/index.js';
+import maria from './models/stat/index.js';
 
 config();
 
@@ -41,7 +42,10 @@ const swaggerSpec = swaggerJsdoc({
 async function initializeDatabase() {
   try {
     await db.sequelize.authenticate();
-    logger.info('Подключение к базе данных успешно установлено.');
+    logger.info('Подключение к PostgreSQL успешно установлено.');
+
+    await maria.sequelize.authenticate();
+    logger.info('Подключение к MariaDB успешно установлено.');
   } catch (error) {
     logger.error(`Ошибка подключения к базе данных: ${error.message}`);
     throw new Error(`Ошибка подключения к базе данных: ${error.message}`);
@@ -64,3 +68,4 @@ async function initializeDatabase() {
 })();
 
 export default app;
+export { maria };

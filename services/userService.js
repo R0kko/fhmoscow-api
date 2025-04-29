@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-const { User, Role } = require('../models');
+const { User, Role } = require('../models/main');
 
 class UserService {
   static async getById(id) {
