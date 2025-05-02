@@ -42,7 +42,6 @@ async function sanitizePlayer(plain) {
   delete plain.sex_id;
   delete plain.photo_id;
 
-  // sex оставляем строкой name или null
   plain.sex = plain.sex ? plain.sex.name : null;
   return plain;
 }
