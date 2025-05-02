@@ -93,6 +93,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'logo_id',
       constraints: false,
     });
+
+    Tournament.hasMany(models.Stage, {
+      as: 'stages',
+      foreignKey: 'tournament_id',
+      constraints: false,
+    });
   };
 
   return Tournament;

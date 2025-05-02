@@ -43,19 +43,36 @@ async function sanitizeTournament(plain) {
     delete plain.logo;
   }
 
-  // удаляем лишние поля
   [
     'type_id',
     'season_id',
     'date_create',
     'date_update',
-    'date_start',
-    'date_end',
     'object_status',
     'hide_in_main_calendar',
+    'logo_id',
+    'tags_id',
   ].forEach((k) => delete plain[k]);
 
   return plain;
+}
+
+async function sanitizeTournamentDetail(plain) {
+  plain = await sanitizeTournament(plain);
+
+  delete plain.logo_id;
+  delete plain.tags_id;
+
+  return plain;
+}
+
+function sanitizeStage(stage) {
+  const plain = stage.get ? stage.get({ plain: true }) : stage;
+  return {
+    id: plain.id,
+    name: plain.name,
+    current: !!plain.current,
+  };
 }
 
 class TournamentService {
@@ -126,13 +143,34 @@ class TournamentService {
           as: 'logo',
           attributes: ['id', 'module', 'name', 'mime_type'],
         },
+        {
+          model: statDb.Stage,
+          as: 'stages',
+          attributes: [
+            'id',
+            'name',
+            'play_off',
+            'current',
+            'transition',
+            'object_status',
+          ],
+          where: { object_status: ['new', 'active'] },
+          required: false,
+          separate: true,
+          order: [['id', 'ASC']],
+        },
       ],
     });
 
     if (!record) {
       throw new Error('Турнир не найден');
     }
-    return record.get({ plain: true });
+
+    const plain = await sanitizeTournamentDetail(record.get({ plain: true }));
+    if (record.stages) {
+      plain.stages = record.stages.map(sanitizeStage);
+    }
+    return plain;
   }
 
   /**
