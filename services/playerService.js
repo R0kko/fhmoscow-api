@@ -14,7 +14,6 @@ async function sanitizePlayer(plain) {
         modulePath,
         plain.photo.name || ''
       );
-      // преобразовали объект в строку URL, можно удалить лишние метаданные
       if (typeof plain.photo !== 'string') {
         plain.photo = String(plain.photo);
       }
