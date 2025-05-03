@@ -58,6 +58,20 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'photo_id',
       as: 'photo',
     });
+
+    Player.belongsToMany(models.Team, {
+      through: models.TeamPlayer,
+      as: 'teams',
+      foreignKey: 'player_id',
+      otherKey: 'team_id',
+      constraints: false,
+    });
+
+    Player.hasMany(models.TeamPlayer, {
+      as: 'teamLinks',
+      foreignKey: 'player_id',
+      constraints: false,
+    });
   };
 
   return Player;

@@ -8,6 +8,7 @@ import seasonsRouter from './season.js';
 import groupsRouter from './groups.js';
 import tournamentTablesRouter from './tournamentTables.js';
 import clubsRouter from './clubs.js';
+import teamRouter from './team.js';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use('/seasons', seasonsRouter);
 router.use('/groups', groupsRouter);
 router.use('/tournamentTables', tournamentTablesRouter);
 router.use('/clubs', clubsRouter);
+router.use('/teams', teamRouter);
 
 export default router;

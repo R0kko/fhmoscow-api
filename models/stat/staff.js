@@ -65,7 +65,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Associations
   Staff.associate = (models) => {
     Staff.belongsTo(models.Sex, {
       as: 'sex',
@@ -76,6 +75,34 @@ module.exports = (sequelize, DataTypes) => {
     Staff.belongsTo(models.File, {
       as: 'photo',
       foreignKey: 'photo_id',
+      constraints: false,
+    });
+
+    Staff.belongsToMany(models.Team, {
+      through: models.TeamStaff,
+      as: 'teams',
+      foreignKey: 'staff_id',
+      otherKey: 'team_id',
+      constraints: false,
+    });
+
+    Staff.hasMany(models.TeamStaff, {
+      as: 'teamLinks',
+      foreignKey: 'staff_id',
+      constraints: false,
+    });
+
+    Staff.belongsToMany(models.Club, {
+      through: models.ClubStaff,
+      as: 'clubs',
+      foreignKey: 'staff_id',
+      otherKey: 'club_id',
+      constraints: false,
+    });
+
+    Staff.hasMany(models.ClubStaff, {
+      as: 'clubLinks',
+      foreignKey: 'staff_id',
       constraints: false,
     });
   };

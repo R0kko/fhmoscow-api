@@ -51,7 +51,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Associations
   TeamStaff.associate = (models) => {
     TeamStaff.belongsTo(models.Staff, {
       as: 'staff',
@@ -65,8 +64,6 @@ module.exports = (sequelize, DataTypes) => {
       constraints: false,
     });
 
-    // "club_staff" таблица с контрактами сотрудников клуба
-    // предполагаем, что модель названа ClubStaff
     TeamStaff.belongsTo(models.ClubStaff, {
       as: 'contract',
       foreignKey: 'contract_id',

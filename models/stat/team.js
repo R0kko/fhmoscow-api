@@ -103,6 +103,26 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'stadium_id',
       constraints: false,
     });
+
+    Team.belongsToMany(models.Player, {
+      through: models.TeamPlayer,
+      as: 'players',
+      foreignKey: 'team_id',
+      otherKey: 'player_id',
+      constraints: false,
+    });
+
+    Team.hasMany(models.TeamPlayer, {
+      as: 'playerLinks',
+      foreignKey: 'team_id',
+      constraints: false,
+    });
+
+    Team.hasMany(models.TeamStaff, {
+      as: 'teamStaff',
+      foreignKey: 'team_id',
+      constraints: false,
+    });
   };
 
   return Team;
