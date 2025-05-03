@@ -9,8 +9,19 @@ const { authenticateUser } = require('../services/authService');
 async function login(req, res) {
   const { phone, password } = req.body;
 
+  if (!phone || !password) {
+    return res.status(400).json({ message: 'phone и password обязательны' });
+  }
+
+  // лёгкая нормализация ввода
+  const normalizedPhone = String(phone).replace(/\D+/g, '');
+  const trimmedPassword = String(password).trim();
+
   try {
-    const { user, token } = await authenticateUser(phone, password);
+    const { user, token } = await authenticateUser(
+      normalizedPhone,
+      trimmedPassword
+    );
 
     return res.json({
       token,
@@ -26,10 +37,15 @@ async function login(req, res) {
       },
     });
   } catch (error) {
-    logger.error(`Auth error for ${phone}: ${error.message}`);
-    return res
-      .status(401)
-      .json({ message: 'Неверный номер телефона или пароль' });
+    const masked = `${normalizedPhone.slice(0, 2)}******${normalizedPhone.slice(-2)}`;
+    logger.error(`Auth error for ${masked}: ${error.message}`);
+
+    if (error.name !== 'AuthError') {
+      // неожиданные ошибки — 500
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+
+    return res.status(401).json({ message: 'Неверный номер телефона или пароль' });
   }
 }
 
