@@ -50,25 +50,43 @@ class TeamService {
             },
           ],
         },
-        // Player → many-to-one Team (предполагаем наличие team_id в player)
+        // TeamPlayer link → Player + ClubPlayer (number, position)
         {
-          model: statDb.Player,
-          as: 'players',
-          attributes: [
-            'id',
-            'surname',
-            'name',
-            'patronymic',
-            'date_of_birth',
-            'object_status',
-          ],
+          model: statDb.TeamPlayer,
+          as: 'playerLinks',
           where: { object_status: { [Op.in]: ['new', 'active'] } },
           required: false,
           include: [
             {
-              model: statDb.File,
-              as: 'photo',
-              attributes: ['id', 'module', 'name'],
+              model: statDb.Player,
+              as: 'player',
+              attributes: [
+                'id',
+                'surname',
+                'name',
+                'patronymic',
+                'date_of_birth',
+              ],
+              include: [
+                {
+                  model: statDb.File,
+                  as: 'photo',
+                  attributes: ['id', 'module', 'name'],
+                },
+              ],
+            },
+            {
+              model: statDb.ClubPlayer,
+              as: 'contract',
+              attributes: ['number'],
+              required: false,
+              include: [
+                {
+                  model: statDb.TeamPlayerRole,
+                  as: 'role',
+                  attributes: ['name'],
+                },
+              ],
             },
           ],
         },
@@ -121,7 +139,8 @@ class TeamService {
     const logoUrl = await fileUrl(plain.club?.logo);
 
     plain.players = await Promise.all(
-      (plain.players || []).map(async (p) => {
+      (plain.playerLinks || []).map(async (link) => {
+        const p = link.player || {};
         const photo = await fileUrl(p.photo);
         return {
           id: p.id,
@@ -129,10 +148,14 @@ class TeamService {
             .filter(Boolean)
             .join(' '),
           date_of_birth: p.date_of_birth,
+          number: link.contract?.number ?? null,
+          position: link.contract?.role?.name ?? null,
           photo_url: photo,
         };
       })
     );
+
+    delete plain.playerLinks;
 
     plain.staff = await Promise.all(
       (plain.teamStaff || []).map(async (ts) => {
