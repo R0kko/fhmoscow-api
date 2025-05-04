@@ -9,6 +9,7 @@ import groupsRouter from './groups.js';
 import tournamentTablesRouter from './tournamentTables.js';
 import clubsRouter from './clubs.js';
 import teamRouter from './team.js';
+import gamesRouter from './games.js';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/groups', groupsRouter);
 router.use('/tournamentTables', tournamentTablesRouter);
 router.use('/clubs', clubsRouter);
 router.use('/teams', teamRouter);
+router.use('/games', gamesRouter);
 
 export default router;
