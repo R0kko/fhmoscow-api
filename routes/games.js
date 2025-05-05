@@ -11,6 +11,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 import {
   getGame,
   listGames,
+  getLineups,
   gameIdParam,
   listQueryValidators,
 } from '../controllers/gameController.js';
@@ -54,6 +55,10 @@ router.use(authMiddleware);
  *         name: stadiumId
  *         schema: { type: integer, minimum: 1 }
  *         description: ID стадиона
+ *       - in: query
+ *         name: playerId
+ *         schema: { type: integer, minimum: 1 }
+ *         description: ID игрока
  *     responses:
  *       200: { description: OK }
  *       400: { description: Некорректные параметры }
@@ -63,6 +68,23 @@ router.get('/', listQueryValidators, listGames);
 /* ------------------------------------------------------------------ */
 /*  DETAIL                                                             */
 /* ------------------------------------------------------------------ */
+
+/**
+ * @swagger
+ * /games/{id}/lineups:
+ *   get:
+ *     tags: [Games]
+ *     summary: Составы команд на матч
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer, minimum: 1 }
+ *     responses:
+ *       200: { description: OK }
+ *       404: { description: Матч или составы не найдены }
+ */
+router.get('/:id/lineups', gameIdParam, getLineups);
 
 /**
  * @swagger

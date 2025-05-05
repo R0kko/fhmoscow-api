@@ -188,6 +188,97 @@ class PlayerService {
       { where: { id } }
     );
   }
+
+  static async getWithStats(id) {
+    const player = await this.getById(id);
+    if (!player) {
+      return null;
+    }
+
+    const { fn, col } = statDb.sequelize;
+
+    const rows = await statDb.PlayerStatistic.findAll({
+      where: { player_id: id },
+      attributes: [
+        'team_id',
+        [fn('COUNT', col('PlayerStatistic.id')), 'games'],
+        [fn('SUM', col('goal')), 'goals'],
+        [fn('SUM', col('assist')), 'assists'],
+        [fn('SUM', col('penalty')), 'penalties'],
+        [fn('SUM', col('missed')), 'missed'],
+        [fn('AVG', col('reliability_factor')), 'reliability_factor'],
+      ],
+      group: ['team_id'],
+      include: [
+        {
+          model: statDb.Team,
+          as: 'team',
+          attributes: ['id', 'short_name', 'full_name', 'club_id'],
+          include: [
+            {
+              model: statDb.Club,
+              as: 'club',
+              attributes: ['id', 'short_name', 'full_name', 'logo_id'],
+              include: [
+                {
+                  model: statDb.File,
+                  as: 'logo',
+                  attributes: ['id', 'module', 'name'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const statistics = await Promise.all(
+      rows.map(async (r) => {
+        const plain = r.get({ plain: true });
+
+        const team = plain.team || {};
+        const club = team.club || {};
+
+        let logoUrl = null;
+        if (club.logo && club.logo.id) {
+          try {
+            logoUrl = await FileService.url(
+              club.logo.id,
+              club.logo.module || 'clubLogo',
+              club.logo.name || ''
+            );
+            if (typeof logoUrl !== 'string') {
+              logoUrl = String(logoUrl);
+            }
+          } catch {
+            /* empty */
+          }
+        }
+
+        return {
+          team_id: team.id,
+          team_name: team.short_name || team.full_name,
+          club_id: club.id,
+          club_name: club.short_name || club.full_name,
+          logo_url: logoUrl,
+          games: Number(plain.games) || 0,
+          goals: Number(plain.goals) || 0,
+          assists: Number(plain.assists) || 0,
+          penalties: Number(plain.penalties) || 0,
+          missed: Number(plain.missed) || 0,
+          reliability_factor:
+            plain.reliability_factor !== null
+              ? Number(parseFloat(plain.reliability_factor).toFixed(3))
+              : null,
+        };
+      })
+    );
+
+    return {
+      ...player,
+      statistics,
+    };
+  }
 }
 
 module.exports = PlayerService;

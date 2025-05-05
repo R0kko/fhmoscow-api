@@ -15,6 +15,7 @@ exports.listQueryValidators = [
   query('status').optional().isInt(),
   query('teamId').optional().isInt({ min: 1 }),
   query('stadiumId').optional().isInt({ min: 1 }),
+  query('playerId').optional().isInt({ min: 1 }),
 ];
 
 /**
@@ -34,9 +35,28 @@ exports.getGame = async (req, res, next) => {
 };
 
 /**
+ * GET /games/:id/lineups — составы обеих команд на матч
+ */
+exports.getLineups = async (req, res, next) => {
+  try {
+    const squads = await GameService.getLineups(req.params.id);
+
+    if (!squads) {
+      // либо матч не найден, либо для него нет заявок
+      return res.status(404).json({ message: 'Составы для матча не найдены' });
+    }
+
+    res.json(squads);
+  } catch (err) {
+    logger.error('getLineups error', err);
+    next(err);
+  }
+};
+
+/**
  * GET /games  — список матчей
  *   ?page=1&limit=20&dateFrom=2025-05-01&dateTo=2025-05-31
- *   &status=1&teamId=10&stadiumId=3
+ *   &status=1&teamId=10&stadiumId=3&playerId=123
  */
 exports.listGames = async (req, res, next) => {
   try {
@@ -55,6 +75,7 @@ exports.listGames = async (req, res, next) => {
       status,
       teamId,
       stadiumId,
+      playerId,
     } = req.query;
 
     const result = await GameService.list({
@@ -65,6 +86,7 @@ exports.listGames = async (req, res, next) => {
       status: status ? Number(status) : undefined,
       teamId: teamId ? Number(teamId) : undefined,
       stadiumId: stadiumId ? Number(stadiumId) : undefined,
+      playerId: playerId ? Number(playerId) : undefined,
     });
 
     res.json(result);

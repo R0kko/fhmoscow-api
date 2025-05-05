@@ -5,10 +5,14 @@ const logger = require('../utils/logger');
 
 /**
  * GET /players/:id – возвращает одного игрока
+ * ?withStats=true – дополнительно отдать агрегированную статистику по командам
  */
 exports.getPlayer = async (req, res, next) => {
   try {
-    const player = await PlayerService.getById(req.params.id);
+    const withStats = req.query.withStats === 'true';
+    const player = withStats
+      ? await PlayerService.getWithStats(req.params.id)
+      : await PlayerService.getById(req.params.id);
     if (!player) {
       return res.status(404).json({ message: 'Игрок не найден' });
     }

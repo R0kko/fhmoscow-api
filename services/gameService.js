@@ -29,6 +29,7 @@ class GameService {
    * @param {number} [opts.status]     – фильтр по статусу
    * @param {number} [opts.teamId]     – ID одной из команд
    * @param {number} [opts.stadiumId]  – ID стадиона
+   * @param {number} [opts.playerId]  – ID игрока (участвовал в матче)
    * @param {number} [opts.page=1]
    * @param {number} [opts.limit=20]
    * @returns {Promise<{data,total,page,limit}>}
@@ -39,12 +40,14 @@ class GameService {
     status,
     teamId,
     stadiumId,
+    playerId,
     page = 1,
     limit = 20,
   } = {}) {
     const offset = (page - 1) * limit;
 
     const where = {};
+    // if filtering by player we will join through GamePlayer later
     where.object_status = { [Op.in]: ['new', 'active'] };
 
     if (dateFrom) {
@@ -69,78 +72,92 @@ class GameService {
       where[Op.or] = [{ team1_id: teamId }, { team2_id: teamId }];
     }
 
+    const baseIncludes = [
+      // Команды
+      {
+        model: statDb.Team,
+        as: 'team1',
+        attributes: ['id', 'short_name'],
+        include: [
+          {
+            model: statDb.Club,
+            as: 'club',
+            attributes: ['id'], // keep at least one column so nested include works
+            include: [
+              {
+                model: statDb.File,
+                as: 'logo',
+                attributes: ['id', 'module', 'name'],
+                required: false,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        model: statDb.Team,
+        as: 'team2',
+        attributes: ['id', 'short_name'],
+        include: [
+          {
+            model: statDb.Club,
+            as: 'club',
+            attributes: ['id'], // keep at least one column so nested include works
+            include: [
+              {
+                model: statDb.File,
+                as: 'logo',
+                attributes: ['id', 'module', 'name'],
+                required: false,
+              },
+            ],
+          },
+        ],
+      },
+      // Тур + группа + турнир
+      {
+        model: statDb.Tour,
+        as: 'tour',
+        attributes: ['id', 'name'],
+        include: [
+          {
+            model: statDb.Group,
+            as: 'group',
+            attributes: ['id', 'name'],
+          },
+          {
+            model: statDb.Tournament,
+            as: 'tournament',
+            attributes: ['id', 'short_name'],
+          },
+        ],
+      },
+      // Стадион
+      {
+        model: statDb.Stadium,
+        as: 'stadium',
+        attributes: ['id', 'name'],
+      },
+    ];
+    const includes = playerId
+      ? [
+        ...baseIncludes,
+        {
+          model: statDb.GamePlayer,
+          as: 'players',
+          attributes: [],
+          required: true,
+          where: { player_id: playerId },
+        },
+      ]
+      : baseIncludes;
+
     const { rows, count } = await statDb.Game.findAndCountAll({
       where,
       limit,
       offset,
       order: [['date_start', 'DESC']],
-      include: [
-        // Команды
-        {
-          model: statDb.Team,
-          as: 'team1',
-          attributes: ['id', 'short_name'],
-          include: [
-            {
-              model: statDb.Club,
-              as: 'club',
-              attributes: ['id'], // keep at least one column so nested include works
-              include: [
-                {
-                  model: statDb.File,
-                  as: 'logo',
-                  attributes: ['id', 'module', 'name'],
-                  required: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: statDb.Team,
-          as: 'team2',
-          attributes: ['id', 'short_name'],
-          include: [
-            {
-              model: statDb.Club,
-              as: 'club',
-              attributes: ['id'], // keep at least one column so nested include works
-              include: [
-                {
-                  model: statDb.File,
-                  as: 'logo',
-                  attributes: ['id', 'module', 'name'],
-                  required: false,
-                },
-              ],
-            },
-          ],
-        },
-        // Тур + группа + турнир
-        {
-          model: statDb.Tour,
-          as: 'tour',
-          attributes: ['id', 'name'],
-          include: [
-            {
-              model: statDb.Group,
-              as: 'group',
-              attributes: ['id', 'name'],
-            },
-            {
-              model: statDb.Tournament,
-              as: 'tournament',
-              attributes: ['id', 'short_name'],
-            },
-          ],
-        },
-        // Стадион
-        {
-          model: statDb.Stadium,
-          as: 'stadium',
-          attributes: ['id', 'name'],
-        },
-      ],
+      include: includes,
     });
 
     const data = await Promise.all(
@@ -205,7 +222,7 @@ class GameService {
             {
               model: statDb.Club,
               as: 'club',
-              attributes: ['id'], // keep at least one column so nested include works
+              attributes: ['id'],
               include: [
                 {
                   model: statDb.File,
@@ -410,6 +427,218 @@ class GameService {
         : null,
       events,
     };
+  }
+
+  /**
+   * Составы команд на матч (игроки + тренерский штаб)
+   * Возвращает объект { team1: {...}, team2: {...} }
+   * @param {number} gameId
+   */
+  static async getLineups(gameId) {
+    const game = await statDb.Game.findOne({
+      where: { id: gameId, object_status: { [Op.ne]: 'deleted' } },
+      attributes: ['team1_id', 'team2_id'],
+      include: [
+        {
+          model: statDb.Team,
+          as: 'team1',
+          attributes: ['id', 'short_name'],
+          include: [
+            {
+              model: statDb.Club,
+              as: 'club',
+              attributes: ['id'],
+              include: [
+                {
+                  model: statDb.File,
+                  as: 'logo',
+                  attributes: ['id', 'module', 'name'],
+                  required: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: statDb.Team,
+          as: 'team2',
+          attributes: ['id', 'short_name'],
+          include: [
+            {
+              model: statDb.Club,
+              as: 'club',
+              attributes: ['id'],
+              include: [
+                {
+                  model: statDb.File,
+                  as: 'logo',
+                  attributes: ['id', 'module', 'name'],
+                  required: false,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!game) {
+      return null;
+    }
+    const g = game.get({ plain: true });
+
+    // helper to build roster for a particular team
+    const buildRoster = async (teamId, shortName, clubId, clubLogo) => {
+      // ---------- players ----------
+      const gpRows = await statDb.GamePlayer.findAll({
+        where: { game_id: gameId, team_id: teamId },
+        include: [
+          {
+            model: statDb.Player,
+            as: 'player',
+            attributes: [
+              'id',
+              'surname',
+              'name',
+              'patronymic',
+              'date_of_birth',
+            ],
+            include: [
+              {
+                model: statDb.File,
+                as: 'photo',
+                attributes: ['id', 'module', 'name'],
+                required: false,
+              },
+            ],
+          },
+        ],
+      });
+
+      const players = await Promise.all(
+        gpRows.map(async (row) => {
+          const r = row.get({ plain: true });
+          const p = r.player;
+
+          const contract = await statDb.ClubPlayer.findOne({
+            where: {
+              player_id: p.id,
+              club_id: clubId,
+              object_status: { [Op.in]: ['new', 'active'] },
+            },
+            attributes: ['number'],
+            include: [
+              {
+                model: statDb.TeamPlayerRole,
+                as: 'role',
+                attributes: ['name'],
+              },
+              {
+                model: statDb.File,
+                as: 'photo',
+                attributes: ['id', 'module', 'name'],
+                required: false,
+              },
+            ],
+          });
+
+          const fullName =
+            `${p.surname} ${p.name}`.trim() +
+            (p.patronymic ? ` ${p.patronymic}` : '');
+
+          const primaryPhoto = p.photo ?? contract?.photo ?? null;
+          const photoUrl = await fileUrl(primaryPhoto, 'playerPhoto');
+
+          return {
+            id: p.id,
+            full_name: fullName,
+            date_of_birth: p.date_of_birth,
+            number: contract?.number ?? null,
+            position: contract?.role?.name ?? null,
+            photo_url: photoUrl,
+          };
+        })
+      );
+
+      // ---------- staff ----------
+      const tsRows = await statDb.TeamStaff.findAll({
+        where: {
+          team_id: teamId,
+          object_status: { [Op.in]: ['new', 'active'] },
+        },
+        include: [
+          {
+            model: statDb.Staff,
+            as: 'staff',
+            attributes: ['id', 'surname', 'name', 'patronymic'],
+          },
+          {
+            model: statDb.ClubStaff,
+            as: 'contract',
+            attributes: ['employment'],
+            include: [
+              {
+                model: statDb.StaffCategory,
+                as: 'category',
+                attributes: ['name'],
+              },
+              {
+                model: statDb.File,
+                as: 'photo',
+                attributes: ['id', 'module', 'name'],
+                required: false,
+              },
+            ],
+          },
+        ],
+      });
+
+      const staff = await Promise.all(
+        tsRows.map(async (row) => {
+          const s = row.get({ plain: true });
+          const person = s.staff || {};
+          const contract = s.contract || {};
+          const fullName =
+            `${person.surname} ${person.name}`.trim() +
+            (person.patronymic ? ` ${person.patronymic}` : '');
+          const category =
+            contract.category?.name || contract.employment || 'Тренер';
+          const photoUrl = await fileUrl(contract.photo ?? null, 'staffPhoto');
+
+          return {
+            id: person.id,
+            full_name: fullName,
+            category,
+            photo_url: photoUrl,
+          };
+        })
+      );
+
+      const logoUrl = await fileUrl(clubLogo ?? null);
+
+      // результат
+      return {
+        short_name: shortName,
+        players,
+        staff,
+        logo_url: logoUrl,
+      };
+    };
+
+    const team1Roster = await buildRoster(
+      g.team1_id,
+      g.team1.short_name,
+      g.team1.club?.id,
+      g.team1.club?.logo
+    );
+    const team2Roster = await buildRoster(
+      g.team2_id,
+      g.team2.short_name,
+      g.team2.club?.id,
+      g.team2.club?.logo
+    );
+
+    return { team1: team1Roster, team2: team2Roster };
   }
 }
 

@@ -167,6 +167,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'game_id',
       constraints: false,
     });
+
+    Game.hasMany(models.GamePlayer, {
+      as: 'players',
+      foreignKey: 'game_id',
+      constraints: false,
+    });
   };
 
   return Game;

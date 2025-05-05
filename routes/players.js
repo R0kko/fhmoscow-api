@@ -90,11 +90,19 @@ router.get(
  *         name: id
  *         required: true
  *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: withStats
+ *         schema: { type: boolean }
+ *         description: Вернуть подробную статистику (true/false)
  *     responses:
  *       200: { description: OK }
  *       404: { description: Игрок не найден }
  */
-router.get('/:id', idParam, getPlayer);
+router.get(
+  '/:id',
+  [idParam, query('withStats').optional().isBoolean()],
+  getPlayer
+);
 
 /**
  * @swagger
