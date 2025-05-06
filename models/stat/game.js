@@ -173,6 +173,14 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'game_id',
       constraints: false,
     });
+
+    Game.belongsToMany(models.Referee, {
+      through: models.GameReferee,
+      as: 'referees',
+      foreignKey: 'game_id',
+      otherKey: 'referee_id',
+      constraints: false,
+    });
   };
 
   return Game;

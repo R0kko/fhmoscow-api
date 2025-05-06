@@ -65,10 +65,6 @@ router.use(authMiddleware);
  */
 router.get('/', listQueryValidators, listGames);
 
-/* ------------------------------------------------------------------ */
-/*  DETAIL                                                             */
-/* ------------------------------------------------------------------ */
-
 /**
  * @swagger
  * /games/{id}/lineups:

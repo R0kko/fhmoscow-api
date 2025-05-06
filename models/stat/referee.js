@@ -91,9 +91,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // ---------------------------------------------------------------------------
-  // Associations
-  // ---------------------------------------------------------------------------
   Referee.associate = (models) => {
     Referee.belongsTo(models.RefereeCategory, {
       as: 'category',
@@ -110,6 +107,14 @@ module.exports = (sequelize, DataTypes) => {
     Referee.belongsTo(models.Sex, {
       as: 'sex',
       foreignKey: 'sex_id',
+      constraints: false,
+    });
+
+    Referee.belongsToMany(models.Game, {
+      through: models.GameReferee,
+      as: 'games',
+      foreignKey: 'referee_id',
+      otherKey: 'game_id',
       constraints: false,
     });
   };
