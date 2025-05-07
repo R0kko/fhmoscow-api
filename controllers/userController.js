@@ -31,7 +31,6 @@ export const updateMe = async (req, res) => {
     res.json(user);
   } catch (err) {
     req.logger?.error(err);
-    console.log(err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 };

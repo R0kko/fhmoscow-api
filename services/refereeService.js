@@ -5,22 +5,30 @@ const mainDb = require('../models/main');
 
 const FileService = require('./fileService');
 
-console.debug('[RefereeService:init] mainDb models =', Object.keys(mainDb));
-console.debug('[RefereeService:init] statDb models  =', Object.keys(statDb));
-console.debug(
-  '[RefereeService:init] RefereeGameConfirmation model type =',
-  typeof mainDb.RefereeGameConfirmation
-);
-
 async function logoUrl(club) {
   if (!club || !club.logo_id) {
     return null;
   }
   try {
-    return await FileService.url(
+    return FileService.url(
       club.logo_id,
       (club.logo && club.logo.module) || 'clubLogo',
       (club.logo && club.logo.name) || ''
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function photoUrl(file) {
+  if (!file) {
+    return null;
+  }
+  try {
+    return FileService.url(
+      file.id,
+      file.module || 'personStaffPhoto',
+      file.name || ''
     );
   } catch {
     return null;
@@ -33,11 +41,6 @@ class RefereeService {
       where: { user_id: userId },
       attributes: ['referee_id'],
     });
-    console.debug(
-      '[RefereeService:_refereeIdsForUser] userId=%s -> refereeIds=%o',
-      userId,
-      pairs.map((r) => r.referee_id)
-    );
     return pairs.map((r) => r.referee_id);
   }
 
@@ -50,16 +53,7 @@ class RefereeService {
    * @returns {Promise<{ rows:Array, count:number }>}
    */
   static async listForUser({ userId, page = 1, limit = 20 } = {}) {
-    console.debug('[RefereeService:listForUser] args:', {
-      userId,
-      page,
-      limit,
-    });
-    // получаем список referee_id, связанных с пользователем
     const refereeIds = await this._refereeIdsForUser(userId);
-    console.debug('[listForUser] refereeIds fetched:', refereeIds);
-    /* DEBUG */
-    console.debug('[listForUser] userId=%s refereeIds=%o', userId, refereeIds);
     if (!refereeIds.length) {
       return { rows: [], count: 0 };
     }
@@ -125,7 +119,6 @@ class RefereeService {
             { model: statDb.City, as: 'city', attributes: ['id', 'name'] },
           ],
         },
-        // Тур + группа + турнир
         {
           model: statDb.Tour,
           as: 'tour',
@@ -145,15 +138,7 @@ class RefereeService {
         },
       ],
     });
-    console.debug(
-      '[listForUser] games fetched count=%d (offset=%d)',
-      games.length,
-      offset
-    );
-    /* DEBUG */
-    console.debug('[listForUser] fetched games=%d', games.length);
 
-    /* подтверждения текущего пользователя */
     const confirmations = await mainDb.RefereeGameConfirmation.findAll({
       where: {
         referee_id: { [Op.in]: refereeIds },
@@ -161,16 +146,11 @@ class RefereeService {
       },
       attributes: ['referee_id', 'game_id'],
     });
-    console.debug(
-      '[listForUser] confirmations fetched=%d — model available=%s',
-      confirmations.length,
-      Boolean(mainDb.RefereeGameConfirmation)
-    );
+
     const confirmedSet = new Set(
       confirmations.map((c) => `${c.referee_id}:${c.game_id}`)
     );
 
-    /* формируем DTO */
     const rows = await Promise.all(
       games.map(async (g) => {
         const plain = g.get({ plain: true });
@@ -223,7 +203,6 @@ class RefereeService {
   static async listForReferee({ refereeId, page = 1, limit = 20 } = {}) {
     const offset = (page - 1) * limit;
 
-    // игры с участием конкретного судьи
     const { rows: games, count } = await statDb.Game.findAndCountAll({
       where: { object_status: { [Op.not]: 'deleted' } },
       limit,
@@ -283,7 +262,6 @@ class RefereeService {
             { model: statDb.City, as: 'city', attributes: ['id', 'name'] },
           ],
         },
-        // Тур + группа + турнир
         {
           model: statDb.Tour,
           as: 'tour',
@@ -304,7 +282,6 @@ class RefereeService {
       ],
     });
 
-    // подтверждения конкретного судьи
     const confirmations = await mainDb.RefereeGameConfirmation.findAll({
       where: {
         referee_id: refereeId,
@@ -314,7 +291,6 @@ class RefereeService {
     });
     const confirmedIds = new Set(confirmations.map((c) => c.game_id));
 
-    // приводим к DTO
     const rows = await Promise.all(
       games.map(async (g) => {
         const plain = g.get({ plain: true });
@@ -360,12 +336,6 @@ class RefereeService {
   }
 
   static async confirm(userId, gameId, yes = true) {
-    console.debug(
-      '[RefereeService:confirm] userId=%s gameId=%s yes=%s',
-      userId,
-      gameId,
-      yes
-    );
     const refereeIds = await this._refereeIdsForUser(userId);
     if (!refereeIds.length) {
       return;
@@ -378,7 +348,6 @@ class RefereeService {
           where,
           transaction: t,
         });
-        console.debug('[confirm] rid=%s existing=%s', rid, Boolean(existing));
 
         if (yes && !existing) {
           await mainDb.RefereeGameConfirmation.create(where, {
@@ -392,7 +361,6 @@ class RefereeService {
   }
 
   static async syncAssignments(userId) {
-    console.debug('[RefereeService:syncAssignments] userId=%s', userId);
     const refereeIds = await this._refereeIdsForUser(userId);
     if (!refereeIds.length) {
       return;
@@ -408,10 +376,6 @@ class RefereeService {
         },
       ],
     });
-    console.debug(
-      '[syncAssignments] confirmations to check=%d',
-      confirmations.length
-    );
 
     for (const conf of confirmations) {
       const updatedAt = conf.game?.date_update;
@@ -419,6 +383,55 @@ class RefereeService {
         await conf.destroy();
       }
     }
+  }
+
+  /**
+   * Список судей, назначенных на конкретный матч.
+   * Возвращает ФИО, роль (position) и телефон пользователя, если найден,
+   * плюс URL фото (если есть).
+   * @param {number} gameId
+   * @returns {Promise<Array<{ id, full_name, role, phone, photo_url }>>}
+   */
+  static async refereesForGame(gameId) {
+    const links = await statDb.GameReferee.findAll({
+      where: { game_id: gameId },
+      include: [
+        {
+          model: statDb.Referee,
+          as: 'referee',
+          attributes: ['id', 'surname', 'name', 'patronymic'],
+          include: [
+            {
+              model: statDb.File,
+              as: 'photo',
+              attributes: ['id', 'module', 'name'],
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
+
+    return Promise.all(
+      links.map(async (link) => {
+        const r = link.get({ plain: true });
+        const person = r.referee || {};
+        const fullName = [person.surname, person.name, person.patronymic]
+          .filter(Boolean)
+          .join(' ');
+        const roleRaw = r.position || '';
+        const role = roleRaw.endsWith(' 2') ? roleRaw.slice(0, -2) : roleRaw;
+        const photo = await photoUrl(person.photo);
+
+        return {
+          id: person.id,
+          full_name: fullName,
+          role,
+          phone: '79101234567',
+          photo_url: photo,
+        };
+      })
+    );
   }
 }
 

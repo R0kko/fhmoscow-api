@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Нет прямых связей, к нему ссылаются другие модели (GameEvent)
   GameEventType.associate = () => {};
 
   return GameEventType;

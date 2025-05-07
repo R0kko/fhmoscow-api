@@ -5,6 +5,7 @@ import {
   revokeConfirmation,
   listGames,
   confirmGame,
+  matchReferees,
 } from '../controllers/refereeController.js';
 
 const router = Router();
@@ -55,6 +56,20 @@ router.use(authMiddleware);
  *         confirmed:
  *           type: boolean
  *           description: Признак подтверждения назначения судьёй
+ *     RefereeRow:
+ *       type: object
+ *       properties:
+ *         id:         { type: integer }
+ *         full_name:  { type: string }
+ *         role:       { type: string }
+ *         phone:
+ *           type: string
+ *           nullable: true
+ *           description: Номер телефона пользователя‑судьи
+ *         photo_url:
+ *           type: string
+ *           format: uri
+ *           nullable: true
  */
 
 /**
@@ -132,5 +147,35 @@ router.patch('/games/:gameId/confirm', confirmGame);
  *         $ref: '#/components/responses/UnauthorizedError'
  */
 router.patch('/games/:gameId/unconfirm', revokeConfirmation);
+
+/**
+ * @swagger
+ * /referees/games/{gameId}/referees:
+ *   get:
+ *     summary: Список судей, назначенных на матч
+ *     tags: [RefereeGames]
+ *     parameters:
+ *       - in: path
+ *         name: gameId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RefereeRow'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+router.get('/games/:gameId/referees', matchReferees);
 
 export default router;

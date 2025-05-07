@@ -87,7 +87,6 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'logo_id',
       constraints: false,
     });
-    // One‑to‑many: club → teams
     Club.hasMany(models.Team, {
       as: 'teams',
       foreignKey: 'club_id',

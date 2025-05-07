@@ -24,7 +24,6 @@ import { listSeasons } from '../controllers/seasonController.js';
 
 const router = Router();
 
-// Авторизацию можно убрать, если список открытый
 router.use(authMiddleware);
 
 /**

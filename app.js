@@ -59,7 +59,6 @@ async function initializeDatabase() {
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 
-  // Swagger UI available at /api/docs
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   app.use('/', indexRouter);

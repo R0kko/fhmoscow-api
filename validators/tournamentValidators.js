@@ -8,12 +8,12 @@ const updateSchema = Joi.object({
   full_name: Joi.string().min(4).max(255),
   short_name: Joi.string().min(2).max(255).allow(null, ''),
   date_start: Joi.date().iso(),
-  date_end: Joi.date().iso().min(Joi.ref('date_start')), // end ≥ start
+  date_end: Joi.date().iso().min(Joi.ref('date_start')),
   year_of_birth: Joi.number().integer().min(1900).max(new Date().getFullYear()),
   hide_in_main_calendar: Joi.boolean(),
 })
-  .min(1) // хотя бы одно поле
-  .unknown(false) // запретить лишние ключи
+  .min(1)
+  .unknown(false)
   .messages({
     'object.unknown': 'Недопустимое поле: {{#label}}',
   });

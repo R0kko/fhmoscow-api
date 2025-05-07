@@ -88,3 +88,30 @@ export const revokeConfirmation = [
     }
   },
 ];
+
+/**
+ * GET /games/:gameId/referees
+ * Список судей, назначенных на указанный матч.
+ */
+export const matchReferees = [
+  param('gameId').isInt({ gt: 0 }).toInt(),
+
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const gameId = Number(req.params.gameId);
+
+    try {
+      const refs = await RefereeService.refereesForGame(gameId);
+      res.json(refs);
+    } catch (err) {
+      logger.error(`matchReferees error: ${err.message}`);
+      res
+        .status(500)
+        .json({ message: 'Не удалось получить список судей матча' });
+    }
+  },
+];

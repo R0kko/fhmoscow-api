@@ -9,7 +9,6 @@ async function fileUrl(file) {
     return null;
   }
   try {
-    // temporary mapping: staffPhoto → personStaffPhoto
     const modulePath =
       file.module === 'staffPhoto'
         ? 'personStaffPhoto'
@@ -50,7 +49,6 @@ class TeamService {
             },
           ],
         },
-        // TeamPlayer link → Player + ClubPlayer (number, position)
         {
           model: statDb.TeamPlayer,
           as: 'playerLinks',

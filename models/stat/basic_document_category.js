@@ -1,6 +1,8 @@
+'use strict';
+
 module.exports = (sequelize, DataTypes) => {
-  const Group = sequelize.define(
-    'Group',
+  const BasicDocumentCategory = sequelize.define(
+    'BasicDocumentCategory',
     {
       id: {
         type: DataTypes.INTEGER.UNSIGNED,
@@ -8,12 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
 
-      tournament_id: {
-        type: DataTypes.INTEGER.UNSIGNED,
-        allowNull: true,
-      },
-
-      stage_id: {
+      parent_category_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,
       },
@@ -26,10 +23,13 @@ module.exports = (sequelize, DataTypes) => {
       date_create: {
         type: DataTypes.DATE,
         allowNull: false,
+        defaultValue: DataTypes.NOW,
       },
+
       date_update: {
         type: DataTypes.DATE,
         allowNull: false,
+        defaultValue: DataTypes.NOW,
       },
 
       object_status: {
@@ -38,28 +38,24 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'group',
+      tableName: 'basic_document_category',
       timestamps: false,
       underscored: true,
+      collate: 'utf8mb4_unicode_ci',
       indexes: [
-        { fields: ['stage_id'] },
-        { fields: ['tournament_id'] },
         { name: 'objectStatus_index', fields: ['object_status'] },
+        { name: 'category_index', fields: ['parent_category_id'] },
       ],
     }
   );
 
-  Group.associate = (models) => {
-    Group.belongsTo(models.Tournament, {
-      foreignKey: 'tournament_id',
-      as: 'tournament',
-    });
-
-    Group.belongsTo(models.Stage, {
-      foreignKey: 'stage_id',
-      as: 'stage',
+  BasicDocumentCategory.associate = (models) => {
+    BasicDocumentCategory.hasMany(models.BasicDocument, {
+      as: 'documents',
+      foreignKey: 'category_id',
+      constraints: false,
     });
   };
 
-  return Group;
+  return BasicDocumentCategory;
 };

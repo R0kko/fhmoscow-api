@@ -67,7 +67,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  /** Associations */
   TournamentTable.associate = (models) => {
     TournamentTable.belongsTo(models.Season, {
       foreignKey: 'season_id',

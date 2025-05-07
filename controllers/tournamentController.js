@@ -40,7 +40,6 @@ exports.getTournament = async (req, res, next) => {
  */
 exports.updateTournament = async (req, res, next) => {
   try {
-    // Валидация
     const { error, value } = validateTournamentUpdate(req.body);
     if (error) {
       return res

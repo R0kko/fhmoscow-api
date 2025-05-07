@@ -23,7 +23,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      /** id позиции (амплуа) игрока на матч, если ведётся */
       position_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,

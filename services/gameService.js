@@ -25,7 +25,7 @@ class GameService {
    * Список матчей
    * @param {Object} opts
    * @param {string} [opts.dateFrom]   – ISO‑дата начала (включительно)
-   * @param {string} [opts.dateTo]     – ISO‑дата конца   (включительно)
+   * @param {string} [opts.dateTo]     – ISO‑дата конца (включительно)
    * @param {number} [opts.status]     – фильтр по статусу
    * @param {number} [opts.teamId]     – ID одной из команд
    * @param {number} [opts.stadiumId]  – ID стадиона
@@ -47,7 +47,6 @@ class GameService {
     const offset = (page - 1) * limit;
 
     const where = {};
-    // if filtering by player we will join through GamePlayer later
     where.object_status = { [Op.in]: ['new', 'active'] };
 
     if (dateFrom) {
@@ -73,7 +72,6 @@ class GameService {
     }
 
     const baseIncludes = [
-      // Команды
       {
         model: statDb.Team,
         as: 'team1',
@@ -82,7 +80,7 @@ class GameService {
           {
             model: statDb.Club,
             as: 'club',
-            attributes: ['id'], // keep at least one column so nested include works
+            attributes: ['id'],
             include: [
               {
                 model: statDb.File,
@@ -102,7 +100,7 @@ class GameService {
           {
             model: statDb.Club,
             as: 'club',
-            attributes: ['id'], // keep at least one column so nested include works
+            attributes: ['id'],
             include: [
               {
                 model: statDb.File,
@@ -114,7 +112,6 @@ class GameService {
           },
         ],
       },
-      // Тур + группа + турнир
       {
         model: statDb.Tour,
         as: 'tour',
@@ -132,7 +129,6 @@ class GameService {
           },
         ],
       },
-      // Стадион
       {
         model: statDb.Stadium,
         as: 'stadium',
@@ -164,7 +160,6 @@ class GameService {
       rows.map(async (g) => {
         const plain = g.get({ plain: true });
 
-        // команды
         const t1Logo = await fileUrl(plain.team1?.club?.logo ?? null);
         const t2Logo = await fileUrl(plain.team2?.club?.logo ?? null);
 
@@ -242,7 +237,7 @@ class GameService {
             {
               model: statDb.Club,
               as: 'club',
-              attributes: ['id'], // keep at least one column so nested include works
+              attributes: ['id'],
               include: [
                 {
                   model: statDb.File,
@@ -431,7 +426,7 @@ class GameService {
 
   /**
    * Составы команд на матч (игроки + тренерский штаб)
-   * Возвращает объект { team1: {...}, team2: {...} }
+   * Возвращает объект {team1: {...}, team2: {...}}
    * @param {number} gameId
    */
   static async getLineups(gameId) {
@@ -487,9 +482,7 @@ class GameService {
     }
     const g = game.get({ plain: true });
 
-    // helper to build roster for a particular team
     const buildRoster = async (teamId, shortName, clubId, clubLogo) => {
-      // ---------- players ----------
       const gpRows = await statDb.GamePlayer.findAll({
         where: { game_id: gameId, team_id: teamId },
         include: [
@@ -560,7 +553,6 @@ class GameService {
         })
       );
 
-      // ---------- staff ----------
       const tsRows = await statDb.TeamStaff.findAll({
         where: {
           team_id: teamId,
@@ -616,7 +608,6 @@ class GameService {
 
       const logoUrl = await fileUrl(clubLogo ?? null);
 
-      // результат
       return {
         short_name: shortName,
         players,

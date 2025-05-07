@@ -75,9 +75,8 @@ class ClubService {
     }
 
     const plain = club.get({ plain: true });
-    plain.logo_url = await resolveLogo(plain.logo); // добавляем поле URL
+    plain.logo_url = await resolveLogo(plain.logo);
 
-    // отфильтровываем команды по статусу
     plain.teams = await Promise.all(
       plain.teams
         .filter((t) => ['new', 'active'].includes(t.object_status))

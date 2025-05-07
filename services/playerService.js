@@ -33,7 +33,6 @@ async function sanitizePlayer(plain) {
     delete plain.photo;
   }
 
-  // Удаляем нежелательные поля
   delete plain.repeated;
   delete plain.reason_for_refusal;
   delete plain.date_create;
@@ -102,7 +101,6 @@ class PlayerService {
             ],
           };
 
-          // relevance: 3 = полное совпадение, 2 = фамилия+имя, 1 = только фамилия
           relevanceCase = literal(`CASE
             WHEN Player.surname = '${surname}' AND Player.name = '${name}' AND Player.patronymic = '${patronymic}' THEN 3
             WHEN Player.surname = '${surname}' AND Player.name = '${name}' THEN 2

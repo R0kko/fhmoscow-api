@@ -50,7 +50,6 @@ module.exports = {
         allowNull: true,
       },
     });
-    // Уникальное ограничение на пару user_id, role_id
     await queryInterface.addConstraint('user_roles', {
       fields: ['user_id', 'role_id'],
       type: 'unique',

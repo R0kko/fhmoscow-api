@@ -22,7 +22,6 @@ class GroupService {
   } = {}) {
     const offset = (page - 1) * limit;
 
-    // базовый where
     const where = {
       object_status: { [Op.in]: ['new', 'active'] },
     };

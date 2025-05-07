@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: 'player', // ← исправлено
+      tableName: 'player',
       timestamps: false,
       underscored: true,
       indexes: [

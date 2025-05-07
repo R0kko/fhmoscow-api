@@ -13,7 +13,6 @@ async function login(req, res) {
     return res.status(400).json({ message: 'phone и password обязательны' });
   }
 
-  // лёгкая нормализация ввода
   const normalizedPhone = String(phone).replace(/\D+/g, '');
   const trimmedPassword = String(password).trim();
 
@@ -41,11 +40,12 @@ async function login(req, res) {
     logger.error(`Auth error for ${masked}: ${error.message}`);
 
     if (error.name !== 'AuthError') {
-      // неожиданные ошибки — 500
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
 
-    return res.status(401).json({ message: 'Неверный номер телефона или пароль' });
+    return res
+      .status(401)
+      .json({ message: 'Неверный номер телефона или пароль' });
   }
 }
 

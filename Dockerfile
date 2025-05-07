@@ -1,12 +1,10 @@
-FROM node:latest
+FROM node:23.11
 
 WORKDIR /usr/src/app
 
-# Копируем файлы зависимостей и устанавливаем их
 COPY package*.json ./
 RUN npm install
 
-# Копируем все файлы проекта
 COPY . .
 
 EXPOSE 3000

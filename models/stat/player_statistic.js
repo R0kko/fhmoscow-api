@@ -8,7 +8,6 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
 
-      /* FK-поля */
       season_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: false,
@@ -30,13 +29,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      /* показатели */
       goal: { type: DataTypes.INTEGER, allowNull: true },
       assist: { type: DataTypes.INTEGER, allowNull: true },
       goal_pass: { type: DataTypes.INTEGER, allowNull: true },
       penalty: { type: DataTypes.INTEGER, allowNull: true },
       missed: { type: DataTypes.INTEGER, allowNull: true },
-      time: { type: DataTypes.DOUBLE, allowNull: true }, // игровое время, сек.
+      time: { type: DataTypes.DOUBLE, allowNull: true },
       reliability_factor: { type: DataTypes.DOUBLE, allowNull: true },
       game_time_percent: { type: DataTypes.INTEGER, allowNull: true },
       is_started: { type: DataTypes.BOOLEAN, allowNull: true },

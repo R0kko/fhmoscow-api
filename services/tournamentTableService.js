@@ -4,7 +4,6 @@ const statDb = require('../models/stat');
 
 const FileService = require('./fileService');
 
-/** Утилита: формируем прямую ссылку на логотип команды */
 async function extractLogoUrl(team) {
   if (!team || !team.club || !team.club.logo) {
     return null;

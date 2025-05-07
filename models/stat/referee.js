@@ -65,13 +65,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
 
-      /* FK → file.id */
       photo_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,
       },
 
-      /* FK → sex.id */
       sex_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,

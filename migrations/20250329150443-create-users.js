@@ -31,7 +31,7 @@ module.exports = {
         unique: true,
       },
       phone: {
-        type: Sequelize.STRING, // храните телефон как строку для сохранения лидирующих нулей
+        type: Sequelize.STRING,
         allowNull: true,
       },
       password: {

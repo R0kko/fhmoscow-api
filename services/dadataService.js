@@ -15,7 +15,7 @@ if (!DADATA_TOKEN || !DADATA_SECRET) {
 class DadataService {
   /**
    * Отправляет одно ФИО в DaData и возвращает стандартизованный объект
-   * @param {string} rawName – «Срегей владимерович иванов»
+   * @param {string} rawName – «Алексей владимерович иванов»
    * @returns {Promise<object>} – объект DaData (surname, name, patronymic, gender, qc…)
    */
   static async cleanName(rawName) {

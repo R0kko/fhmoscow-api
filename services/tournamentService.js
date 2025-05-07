@@ -6,7 +6,6 @@ const {
 const FileService = require('./fileService');
 
 async function sanitizeTournament(plain) {
-  // season name
   if (plain.season && plain.season.name) {
     plain.season = plain.season.name;
   } else {
@@ -30,7 +29,6 @@ async function sanitizeTournament(plain) {
       if (typeof plain.logo !== 'string') {
         plain.logo = String(plain.logo);
       }
-      // Приводим расширение к .jpg, если FileService вернул .jpeg
       if (typeof plain.logo === 'string') {
         plain.logo = plain.logo.replace(/\.jpeg$/i, '.jpg');
       }
@@ -125,7 +123,6 @@ class TournamentService {
     return { data, page, total: count };
   }
 
-  /** Получить турнир по ID (status = active). */
   static async get(id) {
     const { Tournament, TournamentType, Season, File } = statDb;
 

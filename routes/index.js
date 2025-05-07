@@ -11,6 +11,7 @@ import clubsRouter from './clubs.js';
 import teamRouter from './team.js';
 import gamesRouter from './games.js';
 import refereesRouter from './referees.js';
+import documentsRouter from './documents.js';
 
 const router = Router();
 
@@ -29,5 +30,6 @@ router.use('/clubs', clubsRouter);
 router.use('/teams', teamRouter);
 router.use('/games', gamesRouter);
 router.use('/referees', refereesRouter);
+router.use('/documents', documentsRouter);
 
 export default router;

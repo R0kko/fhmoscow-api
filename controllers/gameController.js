@@ -42,7 +42,6 @@ exports.getLineups = async (req, res, next) => {
     const squads = await GameService.getLineups(req.params.id);
 
     if (!squads) {
-      // либо матч не найден, либо для него нет заявок
       return res.status(404).json({ message: 'Составы для матча не найдены' });
     }
 
