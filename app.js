@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url';
 import winston from 'winston';
 import { config } from 'dotenv';
 import express from 'express';
-import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -74,7 +73,6 @@ async function initializeDatabase() {
   app.use(morgan('dev'));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
-  app.use(cookieParser());
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
