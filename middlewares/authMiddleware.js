@@ -11,7 +11,7 @@ export default function authMiddleware(req, res, next) {
   }
 
   try {
-    const secret = process.env.JWT_SECRET || 'secret';
+    const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);
     req.user = typeof decoded === 'string' ? { id: decoded } : decoded;
     next();

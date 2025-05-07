@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 import swaggerDefinition from './docs/swaggerDef.js';
 import indexRouter from './routes/index.js';
@@ -53,6 +55,21 @@ async function initializeDatabase() {
 
 (async () => {
   await initializeDatabase();
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
+
+  const apiLimiter = rateLimit({
+    windowMs: Number(process.env.RATE_WINDOW_MS) || 15 * 60 * 1000,
+    max: Number(process.env.RATE_MAX) || 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+
+  app.use(apiLimiter);
 
   app.use(morgan('dev'));
   app.use(express.json());

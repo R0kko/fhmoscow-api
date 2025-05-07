@@ -39,10 +39,6 @@ async function login(req, res) {
     const masked = `${normalizedPhone.slice(0, 2)}******${normalizedPhone.slice(-2)}`;
     logger.error(`Auth error for ${masked}: ${error.message}`);
 
-    if (error.name !== 'AuthError') {
-      return res.status(500).json({ message: 'Ошибка сервера' });
-    }
-
     return res
       .status(401)
       .json({ message: 'Неверный номер телефона или пароль' });
