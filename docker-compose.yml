@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: fhmoscow
     ports:
       - '5432:5432'
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: [ 'CMD-SHELL', 'pg_isready -U myuser -d fhmoscow' ]
       interval: 10s
@@ -30,13 +28,8 @@ services:
     build: .
     ports:
       - '3000:3000'
-    volumes:
-      - .:/usr/src/app
     environment:
       NODE_ENV: development
     depends_on:
       db:
         condition: service_healthy
-
-volumes:
-  postgres-data:
